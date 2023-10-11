@@ -4,7 +4,7 @@ namespace API_CRUD_ejercicioUno.Models
 {
     public class Producto
     {
-        [Required]
+        [Key]
         public int IdProducto { get; set; }
         [Required]
         public string Nombre { get; set; }
