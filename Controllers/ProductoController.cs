@@ -11,7 +11,7 @@ namespace CRUD_mvc_ejercicioUno.Controllers
         // GET: ProductoController
         public IActionResult Index()
         {
-            return View(Util.Utils.ListaProducto);
+            return View(API_CRUD_ejercicioUno.Util.Utils.ListaProducto);
         }
 
         // GET: ProductoController/Details/5
