@@ -1,92 +1,71 @@
-﻿using API_CRUD_ejercicioUno.Models;
-using API_CRUD_ejercicioUno.Util;
-using Microsoft.AspNetCore.Http;
+﻿using API_CRUD_ejercicioUno.Data;
+using API_CRUD_ejercicioUno.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
-namespace CRUD_mvc_ejercicioUno.Controllers
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace API_CRUD_ejercicioUno.Controllers
 {
-    public class ProductoController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductoController : ControllerBase
     {
-        // GET: ProductoController
-        public IActionResult Index()
+        private readonly ApplicationDBContext _db;
+        public ProductoController(ApplicationDBContext db)
         {
-            return View(API_CRUD_ejercicioUno.Util.Utils.ListaProducto);
+            _db = db;
+        }
+        // GET: api/<ProductoController>
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+           List<Producto> products = await _db.producto.ToListAsync();
+            return Ok(products) ;
         }
 
-        // GET: ProductoController/Details/5
-        public IActionResult Details(int IdProducto)
+        // GET api/<ProductoController>/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
         {
-            Producto producto = Utils.ListaProducto.Find(x => x.IdProducto == IdProducto);
-            if (producto != null)
+            Producto producto = await _db.producto.FirstOrDefaultAsync(x=>x.IdProducto==id);
+            if (producto == null)
             {
-                return View(producto);
+                return BadRequest();
             }
-            else
-            {
-                return RedirectToAction("Index");
-            }
+
+            return Ok(producto);
+
         }
 
-        // GET: ProductoController/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
+        // POST api/<ProductoController>
         [HttpPost]
-        public IActionResult Create(Producto producto)
+        public async Task<IActionResult> Post([FromBody] Producto producto)
         {
-            int id = Utils.ListaProducto.Count() + 1;
-            producto.IdProducto = id;
-            Utils.ListaProducto.Add(producto);
-            return RedirectToAction("Index");
+            Producto producto2 = await _db.producto.FirstOrDefaultAsync(x => x.IdProducto == producto.IdProducto);
+            if (producto == null && producto2 == null)
+            {
+                return BadRequest("No existe :( ");
+            }
+            else 
+            {
+                await _db.producto.AddAsync(producto);
+                await _db.SaveChangesAsync();
+                return Ok(producto);
+            }
+            
         }
 
-        public IActionResult Edit(int IdProducto)
+        // PUT api/<ProductoController>/5
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
         {
-            Producto producto = Utils.ListaProducto.Find(x => x.IdProducto == IdProducto);
-            if (producto != null)
-            {
-                return View(producto);
-            }
-            else
-            {
-                return RedirectToAction("Index");
-            }
         }
 
-
-        [HttpPost]
-        public IActionResult Edit(Producto producto)
+        // DELETE api/<ProductoController>/5
+        [HttpDelete("{id}")]
+        public void Delete(int id)
         {
-            Console.WriteLine(JsonSerializer.Serialize(producto));
-            int id = producto.IdProducto;
-            Producto productoViejo = Utils.ListaProducto.Find(x => x.IdProducto == id);
-            if (productoViejo != null)
-            {
-                int indice = Utils.ListaProducto.FindIndex(x => x.IdProducto == id);
-                Utils.ListaProducto[indice].Cantidad = producto.Cantidad;
-                Utils.ListaProducto[indice].Nombre = producto.Nombre;
-                Utils.ListaProducto[indice].Descripcion = producto.Descripcion;
-            }
-            return RedirectToAction("Index");
         }
-
-        // GET: ProductoController/Delete/5
-        public IActionResult Delete(int IdProducto)
-        {
-            Producto producto = Utils.ListaProducto.Find(x => x.IdProducto == IdProducto);
-            if (producto != null)
-            {
-                Utils.ListaProducto.Remove(producto);
-            }
-            else if (producto == null)
-            {
-
-            }
-            return RedirectToAction("Index");
-        }
-
     }
 }
